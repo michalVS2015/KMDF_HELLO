@@ -1,0 +1,90 @@
+;
+; KMDF_HELLO.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=KMDF_HELLO.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+KMDF_HELLO.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%KMDF_HELLO.DeviceDesc%=KMDF_HELLO_Device, Root\KMDF_HELLO ; TODO: edit hw-id
+
+[KMDF_HELLO_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+KMDF_HELLO.sys
+
+;-------------- Service installation
+[KMDF_HELLO_Device.NT.Services]
+AddService = KMDF_HELLO,%SPSVCINST_ASSOCSERVICE%, KMDF_HELLO_Service_Inst
+
+; -------------- KMDF_HELLO driver install sections
+[KMDF_HELLO_Service_Inst]
+DisplayName    = %KMDF_HELLO.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\KMDF_HELLO.sys
+
+;
+;--- KMDF_HELLO_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+KMDF_HELLO_Device_CoInstaller_CopyFiles = 11
+
+[KMDF_HELLO_Device.NT.CoInstallers]
+AddReg=KMDF_HELLO_Device_CoInstaller_AddReg
+CopyFiles=KMDF_HELLO_Device_CoInstaller_CopyFiles
+
+[KMDF_HELLO_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[KMDF_HELLO_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[KMDF_HELLO_Device.NT.Wdf]
+KmdfService =  KMDF_HELLO, KMDF_HELLO_wdfsect
+[KMDF_HELLO_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "KMDF_HELLO Installation Disk"
+KMDF_HELLO.DeviceDesc = "KMDF_HELLO Device"
+KMDF_HELLO.SVCDESC = "KMDF_HELLO Service"
